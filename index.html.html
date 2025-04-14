@@ -134,8 +134,8 @@
     const due = finalTotal - paidAmount;
 
     const data = {
-      machineStartTime: document.getElementById("startTime").value,
-      machineEndTime: document.getElementById("endTime").value,
+      machineTime: `${document.getElementById("startTime").value} to ${document.getElementById("endTime").value}`,
+      partyName: document.getElementById("partyName").value,
       partyName: document.getElementById("partyName").value,
       partyAddress: document.getElementById("partyAddress").value,
       productDetails: document.getElementById("output").innerText,
