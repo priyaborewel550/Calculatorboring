@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Priya Borewell - Invoice Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f2f2f2;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 5px;
+    }
+
+    .result {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .btns {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .calc-btn {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .print-btn {
+      background-color: #007bff;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .info-section {
+      margin-bottom: 20px;
+    }
+
+    @media print {
+      button, input {
+        display: none;
+      }
+
+      body {
+        background: white;
+        box-shadow: none;
+      }
+
+      .result {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Priya Borewell</h1>
+  <h2>Invoice Calculator</h2>
+
+  <div class="info-section">
+    <label>Party Name: <input type="text" id="partyName" placeholder="Enter party name" /></label><br><br>
+    <label>Address: <input type="text" id="partyAddress" placeholder="Enter address" /></label>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Rate (per ft)</th>
+        <th>Quantity (ft)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="text" id="name1" value="7 inch Casing" /></td>
+        <td><input type="number" id="rate1" value="350" /></td>
+        <td><input type="number" id="qty1" value="0" /></td>
+      </tr>
+      <tr>
+        <td><input type="text" id="name2" value="5 inch Casing" /></td>
+        <td><input type="number" id="rate2" value="150" /></td>
+        <td><input type="number" id="qty2" value="0" /></td>
+      </tr>
+      <tr>
+        <td><input type="text" id="name3" value="Boring" /></td>
+        <td><input type="number" id="rate3" value="120" /></td>
+        <td><input type="number" id="qty3" value="0" /></td>
+      </tr>
+      <tr>
+        <td><input type="text" id="name4" value="Extra Work" /></td>
+        <td><input type="number" id="rate4" value="0" /></td>
+        <td><input type="number" id="qty4" value="0" /></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <label>Advance Payment (₹): <input type="number" id="advance" value="0" /></label>
+  <br><br>
+
+  <div class="btns">
+    <button class="calc-btn" onclick="calculateTotal()">Calculate</button>
+    <button class="print-btn" onclick="window.print()">Print Invoice</button>
+  </div>
+
+  <div class="result" id="output"></div>
+
+  <script>
+    function calculateTotal() {
+      let total = 0;
+      let details = '';
+      const partyName = document.getElementById("partyName").value;
+      const partyAddress = document.getElementById("partyAddress").value;
+
+      for (let i = 1; i <= 4; i++) {
+        const name = document.getElementById(`name${i}`).value;
+        const rate = parseFloat(document.getElementById(`rate${i}`).value) || 0;
+        const qty = parseFloat(document.getElementById(`qty${i}`).value) || 0;
+        const amount = rate * qty;
+        if (qty > 0) {
+          details += `<p>${name}: ₹${rate} x ${qty} ft = ₹${amount.toFixed(2)}</p>`;
+        }
+        total += amount;
+      }
+
+      const advance = parseFloat(document.getElementById('advance').value) || 0;
+      const due = total - advance;
+
+      document.getElementById('output').innerHTML = `
+        <hr>
+        <p><strong>Party Name:</strong> ${partyName || "(Not provided)"}</p>
+        <p><strong>Address:</strong> ${partyAddress || "(Not provided)"}</p>
+        ${details}
+        <p>Total Amount: ₹ ${total.toFixed(2)}</p>
+        <p>Advance Paid: ₹ ${advance.toFixed(2)}</p>
+        <p>Due Amount: ₹ ${due.toFixed(2)}</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
