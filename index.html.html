@@ -12,13 +12,11 @@
     th { background-color: #007bff; color: white; }
     .hidden { display: none; }
     .btn { background-color: #28a745; color: white; border: none; cursor: pointer; }
-    .btn-blue { background-color: #007bff; }
   </style>
 </head>
 <body>
 
-<!-- Invoice Section -->
-<div class="section" id="invoiceSection">
+<div class="section">
   <h2>Invoice Generator</h2>
 
   <!-- Machine Time -->
@@ -58,31 +56,10 @@
   </div>
 </div>
 
-<!-- Admin Login -->
-<div class="section" id="loginBox">
-  <h2>Admin Login</h2>
-  <input type="password" id="adminPass" placeholder="Enter Admin Password" />
-  <button class="btn-blue" onclick="checkPassword()">Login</button>
-</div>
-
-<!-- Dashboard -->
-<div class="section hidden" id="dashboard">
-  <h2>Invoice Records</h2>
-  <table id="invoiceTable">
-    <thead>
-      <tr>
-        <th>Party</th><th>Address</th><th>Products</th><th>Total</th>
-        <th>Advance</th><th>Due</th><th>Mode</th><th>Received By</th><th>Date</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
 <!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDTouQp3lyN5vuB7W2D2URlil5vnwLv9SQ",
@@ -130,58 +107,29 @@
   };
 
   window.saveData = async () => {
-  const paidAmount = parseFloat(document.getElementById("finalAmountPaid").value) || 0;
-  const due = finalTotal - paidAmount;
+    const paidAmount = parseFloat(document.getElementById("finalAmountPaid").value) || 0;
+    const due = finalTotal - paidAmount;
 
-  const data = {
-    machineStartTime: document.getElementById("startTime").value,  // Save machine start time
-    machineEndTime: document.getElementById("endTime").value,      // Save machine end time
-    partyName: document.getElementById("partyName").value,
-    partyAddress: document.getElementById("partyAddress").value,
-    productDetails: document.getElementById("output").innerText,
-    total: finalTotal,
-    amountPaid: paidAmount,
-    due: due,
-    advance: parseFloat(document.getElementById("advance").value) || 0,
-    paymentMode: document.getElementById("paymentMode").value,
-    receivedBy: document.getElementById("receivedBy").value,
-    date: new Date().toLocaleString()
+    const data = {
+      machineStartTime: document.getElementById("startTime").value,
+      machineEndTime: document.getElementById("endTime").value,
+      partyName: document.getElementById("partyName").value,
+      partyAddress: document.getElementById("partyAddress").value,
+      productDetails: document.getElementById("output").innerText,
+      total: finalTotal,
+      amountPaid: paidAmount,
+      due: due,
+      advance: parseFloat(document.getElementById("advance").value) || 0,
+      paymentMode: document.getElementById("paymentMode").value,
+      receivedBy: document.getElementById("receivedBy").value,
+      date: new Date().toLocaleString()
+    };
+
+    await addDoc(collection(db, "invoice"), data);
+
+    alert("Invoice saved successfully!");
+    location.reload();
   };
-
-  // Save data to Firebase
-  await addDoc(collection(db, "invoice"), data);
-
-  alert("Invoice saved successfully!");
-  location.reload();
-};
-
-  const correctPassword = "priya123";
-
-  window.checkPassword = () => {
-    const input = document.getElementById("adminPass").value;
-    if (input === correctPassword) {
-      document.getElementById("loginBox").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-      loadInvoices();
-    } else {
-      alert("Incorrect password!");
-    }
-  };
-
-  async function loadInvoices() {
-    const snapshot = await getDocs(collection(db, "invoice"));
-    const tbody = document.querySelector("#invoiceTable tbody");
-    tbody.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const d = doc.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${d.partyName}</td><td>${d.partyAddress}</td><td><pre>${d.productDetails}</pre></td>
-        <td>₹${d.total}</td><td>₹${d.advance}</td><td>₹${d.due}</td>
-        <td>${d.paymentMode}</td><td>${d.receivedBy}</td><td>${d.date}</td>`;
-      tbody.appendChild(row);
-    });
-  }
 </script>
 
 </body>
