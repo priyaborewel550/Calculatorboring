@@ -1,29 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Priya Borewell - Invoice + Admin</title>
+  <meta charset="UTF-8" />
+  <title>Priya Borewell - Invoice with Time & Save Logic</title>
   <style>
-    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
-    .section { background: #fff; padding: 20px; margin: auto; max-width: 900px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
-    h2 { text-align: center; }
-    input, select, button { width: 100%; padding: 8px; margin: 5px 0; }
+    body { font-family: Arial; background: #f2f2f2; padding: 20px; }
+    .section { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; margin-bottom: 20px; }
+    input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #007bff; color: #fff; }
+    th { background-color: #007bff; color: white; }
     .hidden { display: none; }
     .btn { background-color: #28a745; color: white; border: none; cursor: pointer; }
-    .btn-blue { background-color: #007bff; }
   </style>
 </head>
 <body>
 
 <div class="section">
   <h2>Invoice Generator</h2>
-  <label>Machine Start Time:</label>
-  <input type="time" id="startTime">
-  <label>Machine End Time:</label>
-  <input type="time" id="endTime">
+
+  <!-- Machine Time -->
+  <label>Machine Start Time</label>
+  <input type="time" id="startTime" />
+  <label>Machine End Time</label>
+  <input type="time" id="endTime" />
+
   <input type="text" id="partyName" placeholder="Party Name" />
   <input type="text" id="partyAddress" placeholder="Address" />
 
@@ -38,41 +39,27 @@
   </table>
 
   <input type="number" id="advance" placeholder="Advance Payment (₹)" />
-  <input type="number" id="amountPayable" placeholder="Amount Payable by Party (₹)" />
-  <input type="number" id="amountPaid" placeholder="Amount Paid by Party (₹)" />
   <select id="paymentMode">
     <option value="Cash">Cash</option>
     <option value="Online">Online</option>
   </select>
   <input type="text" id="receivedBy" placeholder="Received By" />
-  <button class="btn" onclick="calculateAndSave()">Calculate & Save</button>
+
+  <button class="btn" onclick="calculate()">Calculate</button>
+
   <div id="output"></div>
+
+  <div id="finalInputs" class="hidden">
+    <input type="number" id="finalAmountPaid" placeholder="Total Amount Paid by Party (₹)" />
+    <p><strong>Due:</strong> ₹<span id="finalDue">0</span></p>
+    <button class="btn" onclick="saveData()">Save to Firebase</button>
+  </div>
 </div>
 
-<!-- Admin Section -->
-<div class="section" id="loginBox">
-  <h2>Admin Login</h2>
-  <input type="password" id="adminPass" placeholder="Enter Password" />
-  <button class="btn-blue" onclick="checkPassword()">Login</button>
-</div>
-
-<div class="section hidden" id="dashboard">
-  <h2>Invoice Records</h2>
-  <table id="invoiceTable">
-    <thead>
-      <tr>
-        <th>Party</th><th>Address</th><th>Products</th><th>Total</th>
-        <th>Advance</th><th>Payable</th><th>Paid</th><th>Due</th>
-        <th>Mode</th><th>Received By</th><th>Machine Time</th><th>Date</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
+<!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDTouQp3lyN5vuB7W2D2URlil5vnwLv9SQ",
@@ -86,68 +73,63 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  window.calculateAndSave = async () => {
-    let total = 0, details = "";
+  let finalTotal = 0;
+
+  window.calculate = () => {
+    finalTotal = 0;
+    let details = "";
     for (let i = 1; i <= 4; i++) {
       const name = document.getElementById(`name${i}`).value;
       const rate = parseFloat(document.getElementById(`rate${i}`).value) || 0;
       const qty = parseFloat(document.getElementById(`qty${i}`).value) || 0;
       if (qty > 0) {
         const amt = rate * qty;
-        total += amt;
+        finalTotal += amt;
         details += `${name}: ₹${rate} x ${qty} = ₹${amt.toFixed(2)}\n`;
       }
     }
 
     const advance = parseFloat(document.getElementById("advance").value) || 0;
-    const payable = parseFloat(document.getElementById("amountPayable").value) || total;
-    const paid = parseFloat(document.getElementById("amountPaid").value) || 0;
-    const due = payable - paid;
+    const due = finalTotal - advance;
+
+    document.getElementById("output").innerHTML = `
+      <p><strong>Calculated Total:</strong> ₹${finalTotal}</p>
+      <p><strong>Advance:</strong> ₹${advance}</p>
+      <p><strong>Due:</strong> ₹${due}</p>
+    `;
+
+    document.getElementById("finalInputs").classList.remove("hidden");
+
+    document.getElementById("finalAmountPaid").addEventListener("input", () => {
+      const paid = parseFloat(document.getElementById("finalAmountPaid").value) || 0;
+      document.getElementById("finalDue").innerText = (finalTotal - paid).toFixed(2);
+    });
+  };
+
+  window.saveData = async () => {
+    const paidAmount = parseFloat(document.getElementById("finalAmountPaid").value) || 0;
+    const due = finalTotal - paidAmount;
 
     const data = {
-      machineTime: `${document.getElementById("startTime").value} to ${document.getElementById("endTime").value}`,
+      machineStartTime: document.getElementById("startTime").value,
+      machineEndTime: document.getElementById("endTime").value,
       partyName: document.getElementById("partyName").value,
       partyAddress: document.getElementById("partyAddress").value,
-      productDetails: details,
-      total, advance,
-      amountPayable: payable,
-      amountPaid: paid,
-      due,
+      productDetails: document.getElementById("output").innerText,
+      total: finalTotal,
+      amountPaid: paidAmount,
+      due: due,
+      advance: parseFloat(document.getElementById("advance").value) || 0,
       paymentMode: document.getElementById("paymentMode").value,
       receivedBy: document.getElementById("receivedBy").value,
       date: new Date().toLocaleString()
     };
 
     await addDoc(collection(db, "invoice"), data);
-    document.getElementById("output").innerHTML = `<strong>Saved!</strong> Total: ₹${total}, Due: ₹${due}`;
-  };
 
-  const correctPassword = "priya123";
-  window.checkPassword = () => {
-    const input = document.getElementById("adminPass").value;
-    if (input === correctPassword) {
-      document.getElementById("loginBox").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-      loadInvoices();
-    } else {
-      alert("Incorrect password!");
-    }
+    alert("Invoice saved successfully!");
+    location.reload();
   };
-
-  async function loadInvoices() {
-    const snapshot = await getDocs(collection(db, "invoice"));
-    const tbody = document.querySelector("#invoiceTable tbody");
-    tbody.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const d = doc.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${d.partyName}</td><td>${d.partyAddress}</td><td><pre>${d.productDetails}</pre></td>
-        <td>₹${d.total}</td><td>₹${d.advance}</td><td>₹${d.amountPayable}</td><td>₹${d.amountPaid}</td><td>₹${d.due}</td>
-        <td>${d.paymentMode}</td><td>${d.receivedBy}</td><td>${d.machineTime}</td><td>${d.date}</td>`;
-      tbody.appendChild(row);
-    });
-  }
 </script>
 
 </body>
