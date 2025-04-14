@@ -13,7 +13,7 @@
 
   <label>Party Name: <input type="text" id="partyName" /></label><br><br>
   <label>Advance Payment: <input type="number" id="advance" /></label><br><br>
-  <label>Due Amount: <input type="number" id="due" /></label><br><br>
+  <label>Due Amount: <input type="number" id="due" readonly /></label><br><br>
 
   <table>
     <thead>
@@ -47,7 +47,10 @@
     </tbody>
   </table>
 
+  <button id="calculateButton">Calculate</button>
   <button id="saveButton">Save Invoice</button>
+
+  <h3>Total: ₹<span id="totalAmount">0</span></h3>
 
   <script>
     // Firebase Configuration
@@ -67,22 +70,26 @@
     // Function to calculate total
     function calculateTotal() {
       let total = 0;
-      const rate1 = parseFloat(document.getElementById('rate1').value);
-      const qty1 = parseFloat(document.getElementById('qty1').value);
+      const rate1 = parseFloat(document.getElementById('rate1').value) || 0;
+      const qty1 = parseFloat(document.getElementById('qty1').value) || 0;
       total += rate1 * qty1;
 
-      const rate2 = parseFloat(document.getElementById('rate2').value);
-      const qty2 = parseFloat(document.getElementById('qty2').value);
+      const rate2 = parseFloat(document.getElementById('rate2').value) || 0;
+      const qty2 = parseFloat(document.getElementById('qty2').value) || 0;
       total += rate2 * qty2;
 
-      const rate3 = parseFloat(document.getElementById('rate3').value);
-      const qty3 = parseFloat(document.getElementById('qty3').value);
+      const rate3 = parseFloat(document.getElementById('rate3').value) || 0;
+      const qty3 = parseFloat(document.getElementById('qty3').value) || 0;
       total += rate3 * qty3;
 
-      const rate4 = parseFloat(document.getElementById('rate4').value);
-      const qty4 = parseFloat(document.getElementById('qty4').value);
+      const rate4 = parseFloat(document.getElementById('rate4').value) || 0;
+      const qty4 = parseFloat(document.getElementById('qty4').value) || 0;
       total += rate4 * qty4;
 
+      const advance = parseFloat(document.getElementById("advance").value) || 0;
+      const due = total - advance;
+      document.getElementById("totalAmount").textContent = total.toFixed(2);
+      document.getElementById("due").value = due.toFixed(2);
       return total;
     }
 
@@ -107,7 +114,8 @@
       }
     }
 
-    // Save Button Event Listener
+    // Event Listeners
+    document.getElementById("calculateButton").addEventListener("click", calculateTotal);
     document.getElementById("saveButton").addEventListener("click", addInvoice);
   </script>
 
