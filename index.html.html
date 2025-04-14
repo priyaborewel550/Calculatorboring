@@ -3,121 +3,155 @@
 <head>
   <meta charset="UTF-8">
   <title>Priya Borewell - Invoice Calculator</title>
-  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
+  <script type="module">
+    // Firebase SDK import
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTouQp3lyN5vuB7W2D2URlil5vnwLv9SQ",
+      authDomain: "priyaborewel.firebaseapp.com",
+      projectId: "priyaborewel",
+      storageBucket: "priyaborewel.appspot.com",
+      messagingSenderId: "372574129565",
+      appId: "1:372574129565:web:71d8962d4a639c2ef43374"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.calculateTotal = async function() {
+      let total = 0;
+      let details = '';
+      const partyName = document.getElementById("partyName").value;
+      const partyAddress = document.getElementById("partyAddress").value;
+      const paymentMode = document.querySelector('input[name="mode"]:checked')?.value || "Not selected";
+      const paymentReceiver = document.getElementById("receiverName").value;
+
+      for (let i = 1; i <= 4; i++) {
+        const name = document.getElementById(`name${i}`).value;
+        const rate = parseFloat(document.getElementById(`rate${i}`).value) || 0;
+        const qty = parseFloat(document.getElementById(`qty${i}`).value) || 0;
+        const amount = rate * qty;
+        if (qty > 0) {
+          details += `<p>${name}: ₹${rate} x ${qty} ft = ₹${amount.toFixed(2)}</p>`;
+        }
+        total += amount;
+      }
+
+      const advance = parseFloat(document.getElementById('advance').value) || 0;
+      const due = total - advance;
+
+      const outputHTML = `
+        <hr>
+        <p><strong>Party Name:</strong> ${partyName}</p>
+        <p><strong>Address:</strong> ${partyAddress}</p>
+        <p><strong>Payment Mode:</strong> ${paymentMode}</p>
+        <p><strong>Payment Receiver:</strong> ${paymentReceiver}</p>
+        ${details}
+        <p><strong>Total Amount:</strong> ₹ ${total.toFixed(2)}</p>
+        <p><strong>Advance Paid:</strong> ₹ ${advance.toFixed(2)}</p>
+        <p><strong>Due Amount:</strong> ₹ ${due.toFixed(2)}</p>
+      `;
+
+      document.getElementById('output').innerHTML = outputHTML;
+
+      // Save to Firebase
+      try {
+        await addDoc(collection(db, "invoices"), {
+          partyName, partyAddress, paymentMode, paymentReceiver,
+          total, advance, due,
+          timestamp: new Date().toISOString()
+        });
+        console.log("Data saved to Firebase");
+      } catch (e) {
+        console.error("Firebase Error:", e.message);
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f2f2f2;
+      border-radius: 10px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    input, select {
+      width: 100%;
+      padding: 5px;
+      margin: 5px 0;
+    }
+    table {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    th, td {
+      padding: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+    }
+    @media print {
+      button, input, label, select {
+        display: none;
+      }
+      body {
+        background: white;
+      }
+    }
+  </style>
 </head>
 <body>
-
   <h1>Priya Borewell</h1>
   <h2>Invoice Calculator</h2>
 
-  <label>Party Name: <input type="text" id="partyName" /></label><br><br>
-  <label>Advance Payment: <input type="number" id="advance" /></label><br><br>
-  <label>Due Amount: <input type="number" id="due" readonly /></label><br><br>
+  <label>Party Name: <input type="text" id="partyName" /></label>
+  <label>Address: <input type="text" id="partyAddress" /></label>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Product Name</th>
-        <th>Rate (per ft)</th>
-        <th>Quantity (ft)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><input type="text" id="name1" value="7 inch Casing" /></td>
-        <td><input type="number" id="rate1" value="350" /></td>
-        <td><input type="number" id="qty1" value="0" /></td>
-      </tr>
-      <tr>
-        <td><input type="text" id="name2" value="5 inch Casing" /></td>
-        <td><input type="number" id="rate2" value="150" /></td>
-        <td><input type="number" id="qty2" value="0" /></td>
-      </tr>
-      <tr>
-        <td><input type="text" id="name3" value="Boring" /></td>
-        <td><input type="number" id="rate3" value="120" /></td>
-        <td><input type="number" id="qty3" value="0" /></td>
-      </tr>
-      <tr>
-        <td><input type="text" id="name4" value="Extra Work" /></td>
-        <td><input type="number" id="rate4" value="0" /></td>
-        <td><input type="number" id="qty4" value="0" /></td>
-      </tr>
-    </tbody>
+  <table border="1">
+    <tr>
+      <th>Product Name</th>
+      <th>Rate (₹/ft)</th>
+      <th>Quantity (ft)</th>
+    </tr>
+    <tr>
+      <td><input type="text" id="name1" value="7 inch Casing" /></td>
+      <td><input type="number" id="rate1" value="350" /></td>
+      <td><input type="number" id="qty1" value="0" /></td>
+    </tr>
+    <tr>
+      <td><input type="text" id="name2" value="5 inch Casing" /></td>
+      <td><input type="number" id="rate2" value="150" /></td>
+      <td><input type="number" id="qty2" value="0" /></td>
+    </tr>
+    <tr>
+      <td><input type="text" id="name3" value="Boring" /></td>
+      <td><input type="number" id="rate3" value="120" /></td>
+      <td><input type="number" id="qty3" value="0" /></td>
+    </tr>
+    <tr>
+      <td><input type="text" id="name4" value="Extra Work" /></td>
+      <td><input type="number" id="rate4" value="0" /></td>
+      <td><input type="number" id="qty4" value="0" /></td>
+    </tr>
   </table>
 
-  <button id="calculateButton">Calculate</button>
-  <button id="saveButton">Save Invoice</button>
+  <label>Advance Payment: ₹ <input type="number" id="advance" value="0" /></label>
+  <label>Payment Mode:
+    <input type="radio" name="mode" value="Cash" /> Cash
+    <input type="radio" name="mode" value="Online" /> Online
+  </label>
+  <label>Payment Receiver Name: <input type="text" id="receiverName" /></label>
 
-  <h3>Total: ₹<span id="totalAmount">0</span></h3>
+  <button onclick="calculateTotal()">Calculate</button>
+  <button onclick="window.print()">Print</button>
 
-  <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",   // Replace with your Firebase API key
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",   // Replace with your Firebase project ID
-      projectId: "YOUR_PROJECT_ID",  // Replace with your Firebase project ID
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",   // Replace with your Firebase project ID
-      messagingSenderId: "YOUR_SENDER_ID",    // Replace with your Firebase sender ID
-      appId: "YOUR_APP_ID"    // Replace with your Firebase app ID
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(app);
-
-    // Function to calculate total
-    function calculateTotal() {
-      let total = 0;
-      const rate1 = parseFloat(document.getElementById('rate1').value) || 0;
-      const qty1 = parseFloat(document.getElementById('qty1').value) || 0;
-      total += rate1 * qty1;
-
-      const rate2 = parseFloat(document.getElementById('rate2').value) || 0;
-      const qty2 = parseFloat(document.getElementById('qty2').value) || 0;
-      total += rate2 * qty2;
-
-      const rate3 = parseFloat(document.getElementById('rate3').value) || 0;
-      const qty3 = parseFloat(document.getElementById('qty3').value) || 0;
-      total += rate3 * qty3;
-
-      const rate4 = parseFloat(document.getElementById('rate4').value) || 0;
-      const qty4 = parseFloat(document.getElementById('qty4').value) || 0;
-      total += rate4 * qty4;
-
-      const advance = parseFloat(document.getElementById("advance").value) || 0;
-      const due = total - advance;
-      document.getElementById("totalAmount").textContent = total.toFixed(2);
-      document.getElementById("due").value = due.toFixed(2);
-      return total;
-    }
-
-    // Function to save invoice to Firestore
-    async function addInvoice() {
-      const partyName = document.getElementById("partyName").value;
-      const advance = document.getElementById("advance").value;
-      const due = document.getElementById("due").value;
-      const totalAmount = calculateTotal();
-
-      try {
-        const docRef = await db.collection("invoices").add({
-          partyName: partyName,
-          advance: advance,
-          due: due,
-          totalAmount: totalAmount,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log("Document written with ID: ", docRef.id);
-      } catch (e) {
-        console.error("Error adding document: ", e);
-      }
-    }
-
-    // Event Listeners
-    document.getElementById("calculateButton").addEventListener("click", calculateTotal);
-    document.getElementById("saveButton").addEventListener("click", addInvoice);
-  </script>
-
+  <div id="output"></div>
 </body>
 </html>
