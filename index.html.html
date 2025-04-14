@@ -12,18 +12,9 @@
     th { background-color: #007bff; color: white; }
     .hidden { display: none; }
     .btn { background-color: #28a745; color: white; border: none; cursor: pointer; }
-    .admin-section { background-color: #ddd; padding: 10px; margin-bottom: 20px; }
-    .admin-btn { background-color: #007bff; }
   </style>
 </head>
 <body>
-
-<div class="admin-section">
-  <h2>Admin Panel</h2>
-  <label for="adminPassword">Enter Admin Password</label>
-  <input type="password" id="adminPassword" />
-  <button class="btn admin-btn" onclick="verifyAdmin()">Login as Admin</button>
-</div>
 
 <div class="section">
   <h2>Invoice Generator</h2>
@@ -65,6 +56,14 @@
   </div>
 </div>
 
+<!-- Admin Panel -->
+<div class="section">
+  <h3>Admin Panel</h3>
+  <label for="adminPassword">Enter Admin Password</label>
+  <input type="password" id="adminPassword" />
+  <button class="btn" onclick="verifyAdmin()">Login as Admin</button>
+</div>
+
 <!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -83,20 +82,6 @@
   const db = getFirestore(app);
 
   let finalTotal = 0;
-
-  // Admin verification
-  let isAdmin = false;
-
-  window.verifyAdmin = () => {
-    const adminPassword = document.getElementById("adminPassword").value;
-    if (adminPassword === "admin123") {  // Replace with your actual admin password
-      isAdmin = true;
-      alert("Admin verified!");
-      document.querySelector(".admin-section").style.display = "none";  // Hide Admin Panel after verification
-    } else {
-      alert("Incorrect password. Please try again.");
-    }
-  };
 
   window.calculate = () => {
     finalTotal = 0;
@@ -148,13 +133,24 @@
       date: new Date().toLocaleString()
     };
 
-    // Only allow saving if admin is verified
-    if (isAdmin) {
-      await addDoc(collection(db, "invoice"), data);
-      alert("Invoice saved successfully!");
-      location.reload();
+    await addDoc(collection(db, "invoice"), data);
+
+    alert("Invoice saved successfully!");
+    location.reload();
+  };
+
+  let isAdmin = false;
+
+  window.verifyAdmin = () => {
+    const adminPassword = document.getElementById("adminPassword").value;
+    if (adminPassword === "admin123") {  // Replace with your actual admin password
+      isAdmin = true;
+      alert("Admin verified!");
+      document.querySelector(".section h3").style.display = "none";  // Hide Admin Panel after verification
+      document.querySelector(".section input").style.display = "none";
+      document.querySelector(".section button").style.display = "none";
     } else {
-      alert("You need to log in as admin to save data.");
+      alert("Incorrect password. Please try again.");
     }
   };
 </script>
