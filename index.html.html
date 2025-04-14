@@ -1,33 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Priya Borewell - All in One</title>
+  <meta charset="UTF-8">
+  <title>Priya Borewell - Invoice + Admin</title>
   <style>
-    body { font-family: Arial; background: #f2f2f2; padding: 20px; }
-    .section { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; margin-bottom: 20px; }
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+    .section { background: #fff; padding: 20px; margin: auto; max-width: 900px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
     h2 { text-align: center; }
-    input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    input, select, button { width: 100%; padding: 8px; margin: 5px 0; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #007bff; color: white; }
+    th { background-color: #007bff; color: #fff; }
     .hidden { display: none; }
     .btn { background-color: #28a745; color: white; border: none; cursor: pointer; }
     .btn-blue { background-color: #007bff; }
-    .status-paid { background-color: #c8e6c9; }
-    .status-due { background-color: #ffcdd2; }
   </style>
 </head>
 <body>
 
-<!-- Invoice Section -->
-<div class="section" id="invoiceSection">
+<div class="section">
   <h2>Invoice Generator</h2>
-
-  <label>Machine Operating Time</label>
-  <input type="time" id="startTime" placeholder="Start Time" />
-  <input type="time" id="endTime" placeholder="End Time" />
-
+  <label>Machine Start Time:</label>
+  <input type="time" id="startTime">
+  <label>Machine End Time:</label>
+  <input type="time" id="endTime">
   <input type="text" id="partyName" placeholder="Party Name" />
   <input type="text" id="partyAddress" placeholder="Address" />
 
@@ -42,38 +38,38 @@
   </table>
 
   <input type="number" id="advance" placeholder="Advance Payment (₹)" />
+  <input type="number" id="amountPayable" placeholder="Amount Payable by Party (₹)" />
+  <input type="number" id="amountPaid" placeholder="Amount Paid by Party (₹)" />
   <select id="paymentMode">
     <option value="Cash">Cash</option>
     <option value="Online">Online</option>
   </select>
   <input type="text" id="receivedBy" placeholder="Received By" />
-  <div id="output"></div>
   <button class="btn" onclick="calculateAndSave()">Calculate & Save</button>
+  <div id="output"></div>
 </div>
 
-<!-- Admin Login -->
+<!-- Admin Section -->
 <div class="section" id="loginBox">
   <h2>Admin Login</h2>
   <input type="password" id="adminPass" placeholder="Enter Password" />
   <button class="btn-blue" onclick="checkPassword()">Login</button>
 </div>
 
-<!-- Dashboard -->
 <div class="section hidden" id="dashboard">
   <h2>Invoice Records</h2>
   <table id="invoiceTable">
     <thead>
       <tr>
-        <th>Party</th><th>Address</th><th>Machine Time</th><th>Products</th>
-        <th>Total</th><th>Advance</th><th>Due</th>
-        <th>Mode</th><th>Received By</th><th>Date</th>
+        <th>Party</th><th>Address</th><th>Products</th><th>Total</th>
+        <th>Advance</th><th>Payable</th><th>Paid</th><th>Due</th>
+        <th>Mode</th><th>Received By</th><th>Machine Time</th><th>Date</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 </div>
 
-<!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -104,24 +100,26 @@
     }
 
     const advance = parseFloat(document.getElementById("advance").value) || 0;
-    const due = total - advance;
-
-    document.getElementById("output").innerHTML = `<strong>Total Amount Payable by Party:</strong> ₹${due}`;
+    const payable = parseFloat(document.getElementById("amountPayable").value) || total;
+    const paid = parseFloat(document.getElementById("amountPaid").value) || 0;
+    const due = payable - paid;
 
     const data = {
-      startTime: document.getElementById("startTime").value,
-      endTime: document.getElementById("endTime").value,
+      machineTime: `${document.getElementById("startTime").value} to ${document.getElementById("endTime").value}`,
       partyName: document.getElementById("partyName").value,
       partyAddress: document.getElementById("partyAddress").value,
       productDetails: details,
-      total, advance, due,
+      total, advance,
+      amountPayable: payable,
+      amountPaid: paid,
+      due,
       paymentMode: document.getElementById("paymentMode").value,
       receivedBy: document.getElementById("receivedBy").value,
       date: new Date().toLocaleString()
     };
 
     await addDoc(collection(db, "invoice"), data);
-    alert("Data saved successfully!");
+    document.getElementById("output").innerHTML = `<strong>Saved!</strong> Total: ₹${total}, Due: ₹${due}`;
   };
 
   const correctPassword = "priya123";
@@ -142,21 +140,11 @@
     tbody.innerHTML = "";
     snapshot.forEach((doc) => {
       const d = doc.data();
-      const statusClass = d.due > 0 ? "status-due" : "status-paid";
       const row = document.createElement("tr");
-      row.className = statusClass;
       row.innerHTML = `
-        <td>${d.partyName}</td>
-        <td>${d.partyAddress}</td>
-        <td>${d.startTime} - ${d.endTime}</td>
-        <td><pre>${d.productDetails}</pre></td>
-        <td>₹${d.total}</td>
-        <td>₹${d.advance}</td>
-        <td>₹${d.due}</td>
-        <td>${d.paymentMode}</td>
-        <td>${d.receivedBy}</td>
-        <td>${d.date}</td>
-      `;
+        <td>${d.partyName}</td><td>${d.partyAddress}</td><td><pre>${d.productDetails}</pre></td>
+        <td>₹${d.total}</td><td>₹${d.advance}</td><td>₹${d.amountPayable}</td><td>₹${d.amountPaid}</td><td>₹${d.due}</td>
+        <td>${d.paymentMode}</td><td>${d.receivedBy}</td><td>${d.machineTime}</td><td>${d.date}</td>`;
       tbody.appendChild(row);
     });
   }
