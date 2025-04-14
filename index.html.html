@@ -2,92 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Priya Borewell - Admin Dashboard</title>
+  <title>Priya Borewell - All in One</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      padding: 20px;
-    }
+    body { font-family: Arial; background: #f2f2f2; padding: 20px; }
+    .section { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; margin-bottom: 20px; }
+    h2 { text-align: center; }
 
-    .login-box, .dashboard {
-      max-width: 800px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .login-box input {
-      padding: 10px;
-      width: 100%;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-
-    .login-box button {
-      padding: 10px;
-      width: 100%;
-      font-size: 16px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-    }
-
-    th {
-      background-color: #007bff;
-      color: white;
-    }
-
-    td[style*="red"] {
-      background-color: #ffd6d6;
-    }
-
-    td[style*="green"] {
-      background-color: #d6ffd6;
-    }
-
-    .hidden {
-      display: none;
-    }
+    input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #007bff; color: white; }
+    .hidden { display: none; }
+    .btn { background-color: #28a745; color: white; border: none; cursor: pointer; }
+    .btn-blue { background-color: #007bff; }
   </style>
 </head>
 <body>
 
-<div class="login-box" id="loginBox">
-  <h2>Admin Login</h2>
-  <input type="password" id="password" placeholder="Enter Password" />
-  <button onclick="checkPassword()">Login</button>
+<!-- Invoice Section -->
+<div class="section" id="invoiceSection">
+  <h2>Invoice Generator</h2>
+  <input type="text" id="partyName" placeholder="Party Name" />
+  <input type="text" id="partyAddress" placeholder="Address" />
+
+  <table>
+    <thead><tr><th>Item</th><th>Rate</th><th>Qty</th></tr></thead>
+    <tbody id="items">
+      <tr><td><input value="7 inch Casing" id="name1" /></td><td><input type="number" value="350" id="rate1" /></td><td><input type="number" value="0" id="qty1" /></td></tr>
+      <tr><td><input value="5 inch Casing" id="name2" /></td><td><input type="number" value="150" id="rate2" /></td><td><input type="number" value="0" id="qty2" /></td></tr>
+      <tr><td><input value="Boring" id="name3" /></td><td><input type="number" value="120" id="rate3" /></td><td><input type="number" value="0" id="qty3" /></td></tr>
+      <tr><td><input value="Extra Work" id="name4" /></td><td><input type="number" value="0" id="rate4" /></td><td><input type="number" value="0" id="qty4" /></td></tr>
+    </tbody>
+  </table>
+
+  <input type="number" id="advance" placeholder="Advance Payment (₹)" />
+  <select id="paymentMode">
+    <option value="Cash">Cash</option>
+    <option value="Online">Online</option>
+  </select>
+  <input type="text" id="receivedBy" placeholder="Received By" />
+  <button class="btn" onclick="calculateAndSave()">Calculate & Save</button>
+
+  <div id="output"></div>
 </div>
 
-<div class="dashboard hidden" id="dashboard">
-  <h2>Priyaborewell Invoice</h2>
+<!-- Admin Login -->
+<div class="section" id="loginBox">
+  <h2>Admin Login Pr**a8*08 </h2>
+  <input type="password" id="adminPass" placeholder="Enter Password" />
+  <button class="btn-blue" onclick="checkPassword()">Login</button>
+</div>
+
+<!-- Dashboard -->
+<div class="section hidden" id="dashboard">
+  <h2>Priya borewell Invoice</h2>
   <table id="invoiceTable">
     <thead>
       <tr>
-        <th>Party Name</th>
-        <th>Address</th>
-        <th>Product Details</th>
-        <th>Total</th>
-        <th>Advance</th>
-        <th>Due</th>
-        <th>Payment Mode</th>
-        <th>Received By</th>
-        <th>Date</th>
-        <th>Status</th>
+        <th>Party</th><th>Address</th><th>Products</th><th>Total</th>
+        <th>Advance</th><th>Due</th><th>Mode</th><th>Received By</th><th>Date</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -97,7 +70,7 @@
 <!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDTouQp3lyN5vuB7W2D2URlil5vnwLv9SQ",
@@ -111,13 +84,44 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  window.calculateAndSave = async () => {
+    let total = 0, details = "";
+    for (let i = 1; i <= 4; i++) {
+      const name = document.getElementById(`name${i}`).value;
+      const rate = parseFloat(document.getElementById(`rate${i}`).value) || 0;
+      const qty = parseFloat(document.getElementById(`qty${i}`).value) || 0;
+      if (qty > 0) {
+        const amt = rate * qty;
+        total += amt;
+        details += `${name}: ₹${rate} x ${qty} = ₹${amt.toFixed(2)}\n`;
+      }
+    }
+
+    const advance = parseFloat(document.getElementById("advance").value) || 0;
+    const due = total - advance;
+
+    const data = {
+      partyName: document.getElementById("partyName").value,
+      partyAddress: document.getElementById("partyAddress").value,
+      productDetails: details,
+      total, advance, due,
+      paymentMode: document.getElementById("paymentMode").value,
+      receivedBy: document.getElementById("receivedBy").value,
+      date: new Date().toLocaleString()
+    };
+
+    await addDoc(collection(db, "invoice"), data);
+
+    document.getElementById("output").innerText = `Saved! Total: ₹${total}, Due: ₹${due}`;
+  };
+
   const correctPassword = "priya8084";
 
   window.checkPassword = () => {
-    const input = document.getElementById('password').value;
+    const input = document.getElementById("adminPass").value;
     if (input === correctPassword) {
-      document.getElementById('loginBox').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
+      document.getElementById("loginBox").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
       loadInvoices();
     } else {
       alert("Incorrect password!");
@@ -125,29 +129,17 @@
   };
 
   async function loadInvoices() {
-    const querySnapshot = await getDocs(collection(db, "invoice"));
-    const tableBody = document.querySelector("#invoiceTable tbody");
-    tableBody.innerHTML = "";
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const statusColor = data.due > 0 ? 'red' : 'green';
-      const statusText = data.due > 0 ? 'Due' : 'Paid';
-
+    const snapshot = await getDocs(collection(db, "invoice"));
+    const tbody = document.querySelector("#invoiceTable tbody");
+    tbody.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const d = doc.data();
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${data.partyName || ""}</td>
-        <td>${data.partyAddress || ""}</td>
-        <td>${data.productDetails || ""}</td>
-        <td>${data.total || 0}</td>
-        <td>${data.advance || 0}</td>
-        <td>${data.due || 0}</td>
-        <td>${data.paymentMode || ""}</td>
-        <td>${data.receivedBy || ""}</td>
-        <td>${data.date || ""}</td>
-        <td style="color: ${statusColor}; font-weight: bold;">${statusText}</td>
-      `;
-      tableBody.appendChild(row);
+        <td>${d.partyName}</td><td>${d.partyAddress}</td><td><pre>${d.productDetails}</pre></td>
+        <td>₹${d.total}</td><td>₹${d.advance}</td><td>₹${d.due}</td>
+        <td>${d.paymentMode}</td><td>${d.receivedBy}</td><td>${d.date}</td>`;
+      tbody.appendChild(row);
     });
   }
 </script>
