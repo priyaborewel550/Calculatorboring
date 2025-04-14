@@ -25,12 +25,6 @@
   <input type="text" id="partyName" placeholder="Party Name" />
   <input type="text" id="partyAddress" placeholder="Address" />
 
-  <label for="startTime">Machine Start Time</label>
-  <input type="time" id="startTime" />
-
-  <label for="endTime">Machine End Time</label>
-  <input type="time" id="endTime" />
-
   <table>
     <thead><tr><th>Item</th><th>Rate</th><th>Qty</th></tr></thead>
     <tbody id="items">
@@ -109,8 +103,6 @@
     const data = {
       partyName: document.getElementById("partyName").value,
       partyAddress: document.getElementById("partyAddress").value,
-      machineStartTime: document.getElementById("startTime").value,
-      machineEndTime: document.getElementById("endTime").value,
       productDetails: details,
       total, advance, due,
       paymentMode: document.getElementById("paymentMode").value,
