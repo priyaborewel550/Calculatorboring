@@ -12,9 +12,18 @@
     th { background-color: #007bff; color: white; }
     .hidden { display: none; }
     .btn { background-color: #28a745; color: white; border: none; cursor: pointer; }
+    .admin-section { background-color: #ddd; padding: 10px; margin-bottom: 20px; }
+    .admin-btn { background-color: #007bff; }
   </style>
 </head>
 <body>
+
+<div class="admin-section">
+  <h2>Admin Panel</h2>
+  <label for="adminPassword">Enter Admin Password</label>
+  <input type="password" id="adminPassword" />
+  <button class="btn admin-btn" onclick="verifyAdmin()">Login as Admin</button>
+</div>
 
 <div class="section">
   <h2>Invoice Generator</h2>
@@ -75,6 +84,20 @@
 
   let finalTotal = 0;
 
+  // Admin verification
+  let isAdmin = false;
+
+  window.verifyAdmin = () => {
+    const adminPassword = document.getElementById("adminPassword").value;
+    if (adminPassword === "admin123") {  // Replace with your actual admin password
+      isAdmin = true;
+      alert("Admin verified!");
+      document.querySelector(".admin-section").style.display = "none";  // Hide Admin Panel after verification
+    } else {
+      alert("Incorrect password. Please try again.");
+    }
+  };
+
   window.calculate = () => {
     finalTotal = 0;
     let details = "";
@@ -125,10 +148,14 @@
       date: new Date().toLocaleString()
     };
 
-    await addDoc(collection(db, "invoice"), data);
-
-    alert("Invoice saved successfully!");
-    location.reload();
+    // Only allow saving if admin is verified
+    if (isAdmin) {
+      await addDoc(collection(db, "invoice"), data);
+      alert("Invoice saved successfully!");
+      location.reload();
+    } else {
+      alert("You need to log in as admin to save data.");
+    }
   };
 </script>
 
