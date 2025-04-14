@@ -3,108 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <title>Priya Borewell - Invoice Calculator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 900px;
-      margin: 20px auto;
-      padding: 20px;
-      background: #f2f2f2;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
-
-    input[type="number"], input[type="text"] {
-      width: 100%;
-      padding: 5px;
-    }
-
-    .result {
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    .btns {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .calc-btn {
-      background-color: #28a745;
-      color: white;
-    }
-
-    .print-btn {
-      background-color: #007bff;
-      color: white;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    .info-section {
-      margin-bottom: 20px;
-    }
-
-    .output-container {
-      background: white;
-      padding: 20px;
-      border: 1px solid #ccc;
-    }
-
-    @media print {
-      button, input, .btns {
-        display: none;
-      }
-
-      body {
-        background: white;
-        box-shadow: none;
-      }
-
-      .output-container {
-        border: none;
-      }
-    }
-  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
 </head>
 <body>
 
   <h1>Priya Borewell</h1>
   <h2>Invoice Calculator</h2>
 
-  <div class="info-section">
-    <label><strong>Party Name:</strong> <input type="text" id="partyName" placeholder="Enter party name" /></label><br><br>
-    <label><strong>Address:</strong> <input type="text" id="partyAddress" placeholder="Enter party address" /></label><br><br>
-    <label><strong>Payment Received By:</strong> <input type="text" id="receivedBy" placeholder="Name of payment receiver" /></label>
-  </div>
+  <label>Party Name: <input type="text" id="partyName" /></label><br><br>
+  <label>Advance Payment: <input type="number" id="advance" /></label><br><br>
+  <label>Due Amount: <input type="number" id="due" /></label><br><br>
 
   <table>
     <thead>
@@ -138,57 +47,68 @@
     </tbody>
   </table>
 
-  <label>Advance Payment (₹): <input type="number" id="advance" value="0" /></label><br><br>
-  <label><strong>Payment Mode:</strong></label>
-  <label><input type="radio" name="paymentMode" value="Cash" checked> Cash</label>
-  <label><input type="radio" name="paymentMode" value="Online"> Online</label>
-
-  <br><br>
-
-  <div class="btns">
-    <button class="calc-btn" onclick="calculateTotal()">Calculate</button>
-    <button class="print-btn" onclick="window.print()">Print Invoice</button>
-  </div>
-
-  <div class="output-container">
-    <div class="result" id="output"></div>
-  </div>
+  <button id="saveButton">Save Invoice</button>
 
   <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",   // Replace with your Firebase API key
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",   // Replace with your Firebase project ID
+      projectId: "YOUR_PROJECT_ID",  // Replace with your Firebase project ID
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",   // Replace with your Firebase project ID
+      messagingSenderId: "YOUR_SENDER_ID",    // Replace with your Firebase sender ID
+      appId: "YOUR_APP_ID"    // Replace with your Firebase app ID
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
+
+    // Function to calculate total
     function calculateTotal() {
       let total = 0;
-      let details = '<table><tr><th>Product</th><th>Rate</th><th>Quantity</th><th>Amount</th></tr>';
-      const partyName = document.getElementById("partyName").value;
-      const partyAddress = document.getElementById("partyAddress").value;
-      const receivedBy = document.getElementById("receivedBy").value;
-      const paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
+      const rate1 = parseFloat(document.getElementById('rate1').value);
+      const qty1 = parseFloat(document.getElementById('qty1').value);
+      total += rate1 * qty1;
 
-      for (let i = 1; i <= 4; i++) {
-        const name = document.getElementById(`name${i}`).value;
-        const rate = parseFloat(document.getElementById(`rate${i}`).value) || 0;
-        const qty = parseFloat(document.getElementById(`qty${i}`).value) || 0;
-        const amount = rate * qty;
-        if (qty > 0) {
-          details += `<tr><td>${name}</td><td>₹${rate}</td><td>${qty} ft</td><td>₹${amount.toFixed(2)}</td></tr>`;
-        }
-        total += amount;
-      }
+      const rate2 = parseFloat(document.getElementById('rate2').value);
+      const qty2 = parseFloat(document.getElementById('qty2').value);
+      total += rate2 * qty2;
 
-      details += '</table>';
+      const rate3 = parseFloat(document.getElementById('rate3').value);
+      const qty3 = parseFloat(document.getElementById('qty3').value);
+      total += rate3 * qty3;
 
-      const advance = parseFloat(document.getElementById('advance').value) || 0;
-      const due = total - advance;
+      const rate4 = parseFloat(document.getElementById('rate4').value);
+      const qty4 = parseFloat(document.getElementById('qty4').value);
+      total += rate4 * qty4;
 
-      document.getElementById('output').innerHTML = `
-        <p><strong>Party Name:</strong> ${partyName || "(Not provided)"}</p>
-        <p><strong>Address:</strong> ${partyAddress || "(Not provided)"}</p>
-        ${details}
-        <p><strong>Total Amount:</strong> ₹ ${total.toFixed(2)}</p>
-        <p><strong>Advance Paid:</strong> ₹ ${advance.toFixed(2)} (${paymentMode})</p>
-        <p><strong>Due Amount:</strong> ₹ ${due.toFixed(2)}</p>
-        <p><strong>Payment Received By:</strong> ${receivedBy || "(Not provided)"}</p>
-      `;
+      return total;
     }
+
+    // Function to save invoice to Firestore
+    async function addInvoice() {
+      const partyName = document.getElementById("partyName").value;
+      const advance = document.getElementById("advance").value;
+      const due = document.getElementById("due").value;
+      const totalAmount = calculateTotal();
+
+      try {
+        const docRef = await db.collection("invoices").add({
+          partyName: partyName,
+          advance: advance,
+          due: due,
+          totalAmount: totalAmount,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log("Document written with ID: ", docRef.id);
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+    }
+
+    // Save Button Event Listener
+    document.getElementById("saveButton").addEventListener("click", addInvoice);
   </script>
 
 </body>
