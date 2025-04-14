@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,6 +73,12 @@
       margin-bottom: 20px;
     }
 
+    .output-container {
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+    }
+
     @media print {
       button, input {
         display: none;
@@ -84,8 +89,8 @@
         box-shadow: none;
       }
 
-      .result {
-        font-size: 16px;
+      .output-container {
+        border: none;
       }
     }
   </style>
@@ -96,8 +101,8 @@
   <h2>Invoice Calculator</h2>
 
   <div class="info-section">
-    <label>Party Name: <input type="text" id="partyName" placeholder="Enter party name" /></label><br><br>
-    <label>Address: <input type="text" id="partyAddress" placeholder="Enter address" /></label>
+    <label><strong>Party Name:</strong> <input type="text" id="partyName" placeholder="Enter party name" /></label><br><br>
+    <label><strong>Address:</strong> <input type="text" id="partyAddress" placeholder="Enter party address" /></label>
   </div>
 
   <table>
@@ -140,12 +145,14 @@
     <button class="print-btn" onclick="window.print()">Print Invoice</button>
   </div>
 
-  <div class="result" id="output"></div>
+  <div class="output-container">
+    <div class="result" id="output"></div>
+  </div>
 
   <script>
     function calculateTotal() {
       let total = 0;
-      let details = '';
+      let details = '<table><tr><th>Product</th><th>Rate</th><th>Quantity</th><th>Amount</th></tr>';
       const partyName = document.getElementById("partyName").value;
       const partyAddress = document.getElementById("partyAddress").value;
 
@@ -155,22 +162,23 @@
         const qty = parseFloat(document.getElementById(`qty${i}`).value) || 0;
         const amount = rate * qty;
         if (qty > 0) {
-          details += `<p>${name}: ₹${rate} x ${qty} ft = ₹${amount.toFixed(2)}</p>`;
+          details += `<tr><td>${name}</td><td>₹${rate}</td><td>${qty} ft</td><td>₹${amount.toFixed(2)}</td></tr>`;
         }
         total += amount;
       }
+
+      details += '</table>';
 
       const advance = parseFloat(document.getElementById('advance').value) || 0;
       const due = total - advance;
 
       document.getElementById('output').innerHTML = `
-        <hr>
         <p><strong>Party Name:</strong> ${partyName || "(Not provided)"}</p>
         <p><strong>Address:</strong> ${partyAddress || "(Not provided)"}</p>
         ${details}
-        <p>Total Amount: ₹ ${total.toFixed(2)}</p>
-        <p>Advance Paid: ₹ ${advance.toFixed(2)}</p>
-        <p>Due Amount: ₹ ${due.toFixed(2)}</p>
+        <p><strong>Total Amount:</strong> ₹ ${total.toFixed(2)}</p>
+        <p><strong>Advance Paid:</strong> ₹ ${advance.toFixed(2)}</p>
+        <p><strong>Due Amount:</strong> ₹ ${due.toFixed(2)}</p>
       `;
     }
   </script>
