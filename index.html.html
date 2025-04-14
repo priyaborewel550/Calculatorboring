@@ -80,7 +80,7 @@
     }
 
     @media print {
-      button, input {
+      button, input, .btns {
         display: none;
       }
 
@@ -102,7 +102,8 @@
 
   <div class="info-section">
     <label><strong>Party Name:</strong> <input type="text" id="partyName" placeholder="Enter party name" /></label><br><br>
-    <label><strong>Address:</strong> <input type="text" id="partyAddress" placeholder="Enter party address" /></label>
+    <label><strong>Address:</strong> <input type="text" id="partyAddress" placeholder="Enter party address" /></label><br><br>
+    <label><strong>Payment Received By:</strong> <input type="text" id="receivedBy" placeholder="Name of payment receiver" /></label>
   </div>
 
   <table>
@@ -137,7 +138,11 @@
     </tbody>
   </table>
 
-  <label>Advance Payment (₹): <input type="number" id="advance" value="0" /></label>
+  <label>Advance Payment (₹): <input type="number" id="advance" value="0" /></label><br><br>
+  <label><strong>Payment Mode:</strong></label>
+  <label><input type="radio" name="paymentMode" value="Cash" checked> Cash</label>
+  <label><input type="radio" name="paymentMode" value="Online"> Online</label>
+
   <br><br>
 
   <div class="btns">
@@ -155,6 +160,8 @@
       let details = '<table><tr><th>Product</th><th>Rate</th><th>Quantity</th><th>Amount</th></tr>';
       const partyName = document.getElementById("partyName").value;
       const partyAddress = document.getElementById("partyAddress").value;
+      const receivedBy = document.getElementById("receivedBy").value;
+      const paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
 
       for (let i = 1; i <= 4; i++) {
         const name = document.getElementById(`name${i}`).value;
@@ -177,8 +184,9 @@
         <p><strong>Address:</strong> ${partyAddress || "(Not provided)"}</p>
         ${details}
         <p><strong>Total Amount:</strong> ₹ ${total.toFixed(2)}</p>
-        <p><strong>Advance Paid:</strong> ₹ ${advance.toFixed(2)}</p>
+        <p><strong>Advance Paid:</strong> ₹ ${advance.toFixed(2)} (${paymentMode})</p>
         <p><strong>Due Amount:</strong> ₹ ${due.toFixed(2)}</p>
+        <p><strong>Payment Received By:</strong> ${receivedBy || "(Not provided)"}</p>
       `;
     }
   </script>
