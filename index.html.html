@@ -130,29 +130,30 @@
   };
 
   window.saveData = async () => {
-    const paidAmount = parseFloat(document.getElementById("finalAmountPaid").value) || 0;
-    const due = finalTotal - paidAmount;
+  const paidAmount = parseFloat(document.getElementById("finalAmountPaid").value) || 0;
+  const due = finalTotal - paidAmount;
 
-    const data = {
-      machineTime: `${document.getElementById("startTime").value} to ${document.getElementById("endTime").value}`,
-      partyName: document.getElementById("partyName").value,
-      partyName: document.getElementById("partyName").value,
-      partyAddress: document.getElementById("partyAddress").value,
-      productDetails: document.getElementById("output").innerText,
-      total: finalTotal,
-      amountPaid: paidAmount,
-      due: due,
-      advance: parseFloat(document.getElementById("advance").value) || 0,
-      paymentMode: document.getElementById("paymentMode").value,
-      receivedBy: document.getElementById("receivedBy").value,
-      date: new Date().toLocaleString()
-    };
-
-    await addDoc(collection(db, "invoice"), data);
-
-    alert("Invoice saved successfully!");
-    location.reload();
+  const data = {
+    machineStartTime: document.getElementById("startTime").value,  // Save machine start time
+    machineEndTime: document.getElementById("endTime").value,      // Save machine end time
+    partyName: document.getElementById("partyName").value,
+    partyAddress: document.getElementById("partyAddress").value,
+    productDetails: document.getElementById("output").innerText,
+    total: finalTotal,
+    amountPaid: paidAmount,
+    due: due,
+    advance: parseFloat(document.getElementById("advance").value) || 0,
+    paymentMode: document.getElementById("paymentMode").value,
+    receivedBy: document.getElementById("receivedBy").value,
+    date: new Date().toLocaleString()
   };
+
+  // Save data to Firebase
+  await addDoc(collection(db, "invoice"), data);
+
+  alert("Invoice saved successfully!");
+  location.reload();
+};
 
   const correctPassword = "priya123";
 
