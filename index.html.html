@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Priya Borewell - Invoice with Time & Save Logic</title>
+  <title>Priya Borewell - Invoice</title>
   <style>
     body { font-family: Arial; background: #f2f2f2; padding: 20px; }
     .section { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; margin-bottom: 20px; }
@@ -19,7 +19,12 @@
 
 <!-- Invoice Section -->
 <div class="section" id="invoiceSection">
-  <h2>Priyaborewell Invoice</h2>
+  <h2>Priya Borewell Invoice</h2>
+
+  <label>Machine Start Time</label>
+  <input type="time" id="startTime" />
+  <label>Machine End Time</label>
+  <input type="time" id="endTime" />
 
   <input type="text" id="partyName" placeholder="Party Name" />
   <input type="text" id="partyAddress" placeholder="Address" />
@@ -66,7 +71,7 @@
     <thead>
       <tr>
         <th>Party</th><th>Address</th><th>Products</th><th>Total</th>
-        <th>Advance</th><th>Due</th><th>Mode</th><th>Received By</th><th>Date</th>
+        <th>Advance</th><th>Due</th><th>Mode</th><th>Received By</th><th>Time</th><th>Date</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -79,12 +84,12 @@
   import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyCpdY5tcnbGukuZLvpR8QCnfC0GmmNrZ9M",
-    authDomain: "boringcalculation.firebaseapp.com",
-    projectId: "boringcalculation",
-    storageBucket: "boringcalculation.firebasestorage.app",
-    messagingSenderId: "758484539918",
-    appId: "1:758484539918:web:9bfa017c5401db849bba5f"
+    apiKey: "AIzaSyDuJAow6zpH992D3BY3tKndKuomGWKpguc",
+    authDomain: "smstestpuja.firebaseapp.com",
+    projectId: "smstestpuja",
+    storageBucket: "smstestpuja.firebasestorage.app",
+    messagingSenderId: "820605419857",
+    appId: "1:820605419857:web:09e90b3f8ec1796b425370"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -142,9 +147,7 @@
       date: new Date().toLocaleString()
     };
 
-    // Saving data to Firebase Firestore collection 'invoice'
     await addDoc(collection(db, "invoice"), data);
-
     alert("Invoice saved successfully!");
     location.reload();
   };
@@ -172,7 +175,9 @@
       row.innerHTML = `
         <td>${d.partyName}</td><td>${d.partyAddress}</td><td><pre>${d.productDetails}</pre></td>
         <td>₹${d.total}</td><td>₹${d.advance}</td><td>₹${d.due}</td>
-        <td>${d.paymentMode}</td><td>${d.receivedBy}</td><td>${d.date}</td>`;
+        <td>${d.paymentMode}</td><td>${d.receivedBy}</td>
+        <td>${d.machineStartTime} - ${d.machineEndTime}</td>
+        <td>${d.date}</td>`;
       tbody.appendChild(row);
     });
   }
