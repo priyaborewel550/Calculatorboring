@@ -78,15 +78,17 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+  // Replace with your actual Firebase config
   const firebaseConfig = {
-    apiKey: "AIzaSyDTouQp3lyN5vuB7W2D2URlil5vnwLv9SQ",
-    authDomain: "priyaborewel.firebaseapp.com",
-    projectId: "priyaborewel",
-    storageBucket: "priyaborewel.appspot.com",
-    messagingSenderId: "372574129565",
-    appId: "1:372574129565:web:71d8962d4a639c2ef43374"
+    apiKey: "AIzaSyCpdY5tcnbGukuZLvpR8QCnfC0GmmNrZ9M",
+    authDomain: "boringcalculation.firebaseapp.com",
+    projectId: "boringcalculation",
+    storageBucket: "boringcalculation.firebasestorage.app",
+    messagingSenderId: "758484539918",
+    appId: "1:758484539918:web:9bfa017c5401db849bba5f"
   };
 
+  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
@@ -148,7 +150,7 @@
     location.reload();
   };
 
-  const correctPassword = "priya123";
+  const correctPassword = "priya8084";
 
   window.checkPassword = () => {
     const input = document.getElementById("adminPass").value;
