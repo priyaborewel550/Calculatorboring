@@ -78,7 +78,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-  // Replace with your actual Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyCpdY5tcnbGukuZLvpR8QCnfC0GmmNrZ9M",
     authDomain: "boringcalculation.firebaseapp.com",
@@ -88,7 +87,6 @@
     appId: "1:758484539918:web:9bfa017c5401db849bba5f"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
@@ -144,6 +142,7 @@
       date: new Date().toLocaleString()
     };
 
+    // Saving data to Firebase Firestore collection 'invoice'
     await addDoc(collection(db, "invoice"), data);
 
     alert("Invoice saved successfully!");
