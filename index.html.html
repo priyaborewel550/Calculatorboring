@@ -14,18 +14,9 @@
     .btn { background-color: #28a745; color: white; border: none; cursor: pointer; }
     .btn-blue { background-color: #007bff; color: white; }
 
-    /* Responsive input for mobile */
     @media (max-width: 600px) {
-      input, select, button {
-        width: 100%;
-        font-size: 14px;
-        padding: 6px;
-      }
-
-      table input {
-        font-size: 14px;
-        padding: 4px;
-      }
+      input, select, button { width: 100%; font-size: 14px; padding: 6px; }
+      table input { font-size: 14px; padding: 4px; }
     }
   </style>
 </head>
@@ -64,30 +55,15 @@
   <div id="finalInputs" class="hidden">
     <input type="number" id="finalAmountPaid" placeholder="Total Amount Paid by Party (₹)" />
     <p><strong>Due:</strong> ₹<span id="finalDue">0</span></p>
-    <button class="btn" onclick="saveData()">Save to Firebase</button>
+    <button class="btn" onclick="sendTelegram()">Send to Telegram</button>
     <button class="btn-blue hidden" id="printBtn" onclick="printInvoice()">Print Invoice</button>
   </div>
 </div>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDuJAow6zpH992D3BY3tKndKuomGWKpguc",
-    authDomain: "smstestpuja.firebaseapp.com",
-    projectId: "smstestpuja",
-    storageBucket: "smstestpuja.appspot.com",
-    messagingSenderId: "820605419857",
-    appId: "1:820605419857:web:09e90b3f8ec1796b425370"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+<script>
   let finalTotal = 0;
 
-  window.calculate = () => {
+  function calculate() {
     finalTotal = 0;
     let details = "";
     for (let i = 1; i <= 4; i++) {
@@ -117,9 +93,9 @@
       const paid = parseFloat(document.getElementById("finalAmountPaid").value) || 0;
       document.getElementById("finalDue").innerText = (finalTotal - paid).toFixed(2);
     });
-  };
+  }
 
-  window.saveData = async () => {
+  function sendTelegram() {
     const paidAmount = parseFloat(document.getElementById("finalAmountPaid").value) || 0;
     const due = finalTotal - paidAmount;
 
@@ -140,15 +116,9 @@
         paymentMode: document.getElementById("paymentMode").value,
         receivedBy: document.getElementById("receivedBy").value,
         date: new Date().toLocaleString(),
-        location: {
-          lat: latitude,
-          lng: longitude
-        }
+        location: { lat: latitude, lng: longitude }
       };
 
-      await addDoc(collection(db, "invoice"), data);
-
-      // Telegram
       const itemLines = data.productDetails
         .split("\n")
         .filter(line => line.includes("= ₹"))
@@ -157,10 +127,11 @@
 
       const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
-      const botToken = "7202755147:AAGH68EAWvRY_AsBk1bmU1PK9AJljyPH0nw";
-      const chatId = "7398682108";
+      // 🔹 Replace with your Telegram bot details
+      const botToken = "YOUR_TELEGRAM_BOT_TOKEN";
+      const chatId = "YOUR_CHAT_ID";
 
-      const message = `🧾 *New Invoice Saved!*
+      const message = `🧾 *New Invoice!*
 
 👤 *Party:* ${data.partyName}
 📍 *Address:* ${data.partyAddress}
@@ -177,7 +148,7 @@ ${itemLines}
 📅 *Date:* ${data.date}
 📌 *Location:* [Google Map](${mapLink})`;
 
-      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -187,12 +158,12 @@ ${itemLines}
         })
       });
 
-      alert("Invoice saved with location & sent to Telegram!");
+      alert("✅ Invoice sent to Telegram!");
       document.getElementById("printBtn").classList.remove("hidden");
-    });
-  };
+    }, () => alert("❌ Location permission denied!"));
+  }
 
-  window.printInvoice = () => {
+  function printInvoice() {
     const party = document.getElementById("partyName").value;
     const address = document.getElementById("partyAddress").value;
     const start = document.getElementById("startTime").value;
@@ -215,8 +186,7 @@ ${itemLines}
     win.document.write(`<html><head><title>Invoice</title></head><body>${printContent}</body></html>`);
     win.document.close();
     win.print();
-  };
+  }
 </script>
-
 </body>
 </html>
